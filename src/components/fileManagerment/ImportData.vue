@@ -1,28 +1,26 @@
 <template>
-  <div>
-    <v-file-input
-    show-size
-    label="Excel input"
-    variant="outlined"
-    accept=".xlsx"
-    @change="inputXlsxFile($event)"
-  ></v-file-input>
+  <div class="mt-3 mx-2">
+    <v-file-input label="Excel input" variant="outlined"
+      accept=".xlsx" @change="inputXlsxFile($event)"
+    ></v-file-input>
+    <v-btn variant="outlined" @click="uploadXlsx">
+      Upload
+    </v-btn>
   </div>
 </template>
 <script setup>
-  // import {ref} from 'vue';
-  import { read, utils, writeFile } from 'xlsx';
-
+  import {ref} from 'vue';
+  import { dataService } from '../../service/dataservice';
+  // import {Subject, Observable} from 'rxjs';
+  // const comSubject$ = new Subject([]);
+  const inputFile = ref(null);
   const inputXlsxFile = (ev)=>{
-    if(ev.target.files.length === 0)return;
-    const xlsxFile = ev.target.files[0];
-    console.log(xlsxFile, 'xlsxFile')
-    const xlsxFileReader = new FileReader();
-    xlsxFileReader.readAsText(xlsxFileReader)
-    xlsxFileReader.onload = (e)=>{
-      const result  = e.target.result;
-      console.log(result)
-    }
-    
+    if( ev.target.files.length === 0 || ev.target.files[0].name === '') return;
+    inputFile.value =  ev.target.files[0];
   } 
+  const uploadXlsx = async() => {
+    const inputVal = inputFile.value
+    dataService.handledXlsxFormat(inputVal);
+    
+  }
 </script>

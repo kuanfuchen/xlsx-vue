@@ -1,6 +1,7 @@
 <template>
-  <div>
+  <div style="width:60vw;height:200px">
     <ImportData />
+    
   </div>
 </template>
 <script setup>
