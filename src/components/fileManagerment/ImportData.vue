@@ -3,7 +3,7 @@
     <v-file-input label="Excel input" variant="outlined"
       accept=".xlsx" @change="inputXlsxFile($event)"
     ></v-file-input>
-    <v-btn variant="outlined" @click="uploadXlsx">
+    <v-btn variant="outlined" class="text-none" @click="uploadXlsx">
       Upload
     </v-btn>
   </div>
@@ -21,6 +21,5 @@
   const uploadXlsx = async() => {
     const inputVal = inputFile.value
     dataService.handledXlsxFormat(inputVal);
-    
   }
 </script>

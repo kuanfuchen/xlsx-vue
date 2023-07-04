@@ -3,7 +3,6 @@
     <v-main>
       <!-- <HelloWorld /> -->
       <MainInterface></MainInterface>
-      
     </v-main>
   </v-app>
 </template>
