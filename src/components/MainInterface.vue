@@ -32,6 +32,7 @@
     // dataXlsx.value = table.tableContent;
   })
   const combinedTableInfo = (xlsxData)=>{
+    
     const headerKeys = Object.keys(xlsxData.data[0]);
     for(let i = 0 ; headerKeys.length > i ; i++){
       headerXlsx.value.push({
