@@ -1,5 +1,8 @@
 import { Subject } from "rxjs";
 import { read, utils,writeFileXLSX,/* writeFile */} from 'xlsx';
+// import readXlsxFile from 'read-excel-file';
+import readXlsxFile from 'read-excel-file/web-worker';
+// import XLSXTransformStream from 'xlsx-write-stream';
 // import  xlstream  from 'xlstream';
 let xlsxData = [];
 let sheetName;
@@ -17,15 +20,27 @@ const handleBigContentFile = async(inputFile) =>{
       let fileSizeEnd = fileSizeIndex + bytePerPiece;
       if(fileSizeEnd > inputFile.size)fileSizeEnd = inputFile.size;
       const chunkFile = inputFile.slice(fileSizeIndex, fileSizeEnd);
-      const promiseBlob = Promise.resolve(chunkFile).then((val)=> val.arrayBuffer());
+      // const promiseBlob = Promise.resolve(chunkFile).then((val)=> val.arrayBuffer());
+      const promiseBlob = Promise.resolve(chunkFile).then((val)=> val);
       fileArr.push(promiseBlob);
       fileSizeIndex = fileSizeEnd
     }
   } 
   return await fileArr
 }
-const handledXlsxFormat = async(inputFile)=>{
+const handledXlsxFormat = async(inputFile) => {
   console.log(inputFile);
+  // readXlsxFile(inputFile).then((rows)=>{
+  //   console.log(rows)
+  // })
+  onmessage = ()=>{
+    readXlsxFile(inputFile).then((rows) => {
+      // `rows` is an array of rows
+      // each row being an array of cells.
+      postMessage(rows)
+    })
+  }
+  return
   const handleFile = await handleBigContentFile(inputFile);
   const xlsxBufferArr = await Promise.all(handleFile).then((values)=> values);
   console.log(xlsxBufferArr, 'xlsxBufferArr')
@@ -59,6 +74,9 @@ const handledXlsxFormat = async(inputFile)=>{
     // }) 
     // console.log(xlsxData,'data');
     // await _transferTableInfo$.next({ name:sheetName, data:xlsxData });
+}
+const xlsxFile = (xlsxBuffer, isTrue)=>{
+
 }
 const readXlsx = async(xlsxBuffer, isTrue)=>{
   const workBook = await read(xlsxBuffer);
