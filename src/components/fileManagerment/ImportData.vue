@@ -1,7 +1,7 @@
 <template>
   <div class="mt-3 mx-2">
     <v-file-input label="Excel input" variant="outlined"
-      accept=".xlsx" @change="inputXlsxFile($event)"
+      accept=".xlsx, .xls" @change="inputXlsxFile($event)"
     ></v-file-input>
     <v-btn variant="outlined" class="text-none" @click="uploadXlsx">
       Upload

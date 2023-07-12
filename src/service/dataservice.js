@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 import { read, utils,writeFileXLSX,/* writeFile */} from 'xlsx';
 // import readXlsxFile from 'read-excel-file';
-import readXlsxFile from 'read-excel-file/web-worker';
+// import readXlsxFile from 'read-excel-file/web-worker';
 let xlsxData = [];
 let sheetName;
 const _transferTableInfo$ = new Subject([]);
@@ -42,7 +42,6 @@ const handleBigContentFile = async(inputFile) =>{
 //   })
 // };
 const sheetjsWebWorker = (xlsxBuffer)=>{
-  console.log(xlsxBuffer,'xlsxBuffer')
   return new Promise((res, rej)=>{
     const xlsxWorker = new Worker(new URL('worker.js', import.meta.url),{type:'module'});
     xlsxWorker.postMessage(xlsxBuffer);
@@ -90,27 +89,31 @@ const handledXlsxFormat = async(inputFile) => {
   //sheetjswebwork
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
-  // console.log(sheetjsXlsx, 'sheetjsXlsx');
+  const sheetjsXlsx = await sheetjsWebWorker(inputFile);
+  await _transferTableInfo$.next({ 
+    name: sheetjsXlsx.data.sheetName, 
+    data: sheetjsXlsx.data.xlsxData 
+  });
+  console.log(sheetjsXlsx, 'sheetjsXlsx');
   //small file
-  const xlsxBuffer = await inputFile.arrayBuffer();
-  const workBook = read(xlsxBuffer);
-  // type: "binary",
-  console.log(workBook,'')
-  if(workBook.SheetNames.length > 1){
-    return
-  }else{
-    sheetName = workBook.SheetNames[0];
-  }
-    xlsxData = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
-    // console.log(xlsxData, 'xlsxData')
-    // xlsxData = new Promise((resolve,reject)=>{
-    //   resolve(utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/));
-    //   reject((err)=>console.log(err))
-    // }) 
-    await _transferTableInfo$.next({ name:sheetName, data:xlsxData });
+  // const xlsxBuffer = await inputFile.arrayBuffer();
+  // const workBook = read(xlsxBuffer);
+  // // type: "binary",
+  // console.log(workBook,'')
+  // if(workBook.SheetNames.length > 1){
+  //   return
+  // }else{
+  //   sheetName = workBook.SheetNames[0];
+  // }
+  //   xlsxData = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
+  //   // console.log(xlsxData, 'xlsxData')
+  //   // xlsxData = new Promise((resolve,reject)=>{
+  //   //   resolve(utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/));
+  //   //   reject((err)=>console.log(err))
+  //   // }) 
+  //   await _transferTableInfo$.next({ name:sheetName, data:xlsxData });
 }
 const readXlsx = async(xlsxBuffer, isTrue) => {
-  console.log(xlsxBuffer, 'xlsxBuffer')
   const workBook = await read(xlsxBuffer);
   console.log(workBook)
     // console.log(workBook,'workBook');
@@ -128,7 +131,6 @@ const readXlsx = async(xlsxBuffer, isTrue) => {
     }
 }
 const handleFilterXlsx = ()=> console.log('handleFilterXlsx');
-// const handledXlsxFormat = ()=>{}
 const exportXlsx = ()=> {
   const wb = utils.book_new();
   const ws = utils.json_to_sheet(xlsxData);
