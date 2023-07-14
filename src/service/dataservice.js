@@ -1,5 +1,6 @@
 import { Subject } from "rxjs";
 import { read, utils,writeFileXLSX,/* writeFile */} from 'xlsx';
+import axios from 'axios';
 // import readXlsxFile from 'read-excel-file';
 // import readXlsxFile from 'read-excel-file/web-worker';
 let xlsxData = [];
@@ -86,15 +87,30 @@ const handledXlsxFormat = async(inputFile) => {
   //   xlsxData = xlsxData.concat(sheetjsXlsx);
   // })
   // console.log(xlsxData, 'xlsxData')
+
+  //axios
+  axios.post('http://localhost:8081/posts', {
+    file:inputFile
+  },{
+    timeout: 100000,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }})
+  .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
   //sheetjswebwork
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
-  const sheetjsXlsx = await sheetjsWebWorker(inputFile);
-  await _transferTableInfo$.next({ 
-    name: sheetjsXlsx.data.sheetName, 
-    data: sheetjsXlsx.data.xlsxData 
-  });
-  console.log(sheetjsXlsx, 'sheetjsXlsx');
+  // await _transferTableInfo$.next({ 
+  //   name: sheetjsXlsx.data.sheetName, 
+  //   data: sheetjsXlsx.data.xlsxData 
+  // });
+  // console.log(sheetjsXlsx, 'sheetjsXlsx');
   //small file
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const workBook = read(xlsxBuffer);
@@ -112,6 +128,14 @@ const handledXlsxFormat = async(inputFile) => {
   //   //   reject((err)=>console.log(err))
   //   // }) 
   //   await _transferTableInfo$.next({ name:sheetName, data:xlsxData });
+  // 
+  // const xlsxBuffer = await inputFile.arrayBuffer();
+  // let len = xlsxBuffer.byteLength;
+  // if(len < 1024) len += " bytes"; else { len /= 1024;
+  //   if(len < 1024) len += " KB"; else { len /= 1024; len += " MB"; }
+  // }
+  // console.log(len,'len')
+  
 }
 const readXlsx = async(xlsxBuffer, isTrue) => {
   const workBook = await read(xlsxBuffer);
