@@ -8,7 +8,7 @@ let sheetName;
 const _transferTableInfo$ = new Subject([]);
 const _exportFileProgram$ = new Subject({});
 const handleBigContentFile = async(inputFile) =>{
-  const bytePerPiece = 1024 * 1024 * 10;
+  const bytePerPiece = 1024 * 1024 * 5;
   const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
   let fileSizeIndex = 0;
   // const fileName = inputFile.name;
@@ -18,11 +18,11 @@ const handleBigContentFile = async(inputFile) =>{
     for (let i = 0 ; fileNumber > i ; i++){
       let fileSizeEnd = fileSizeIndex + bytePerPiece;
       if(fileSizeEnd > inputFile.size) fileSizeEnd = inputFile.size;
-      const type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64';
+      const type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       const chunkFile = inputFile.slice(fileSizeIndex, fileSizeEnd, type);
       // const promiseBlob = Promise.resolve(chunkFile).then((val)=> val.arrayBuffer());
-      const promiseBlob = Promise.resolve(chunkFile).then((val)=> val);
-      fileArr.push(promiseBlob);
+      Promise.resolve(chunkFile).then((promiseBlob) => fileArr.push(promiseBlob));
+      
       fileSizeIndex = fileSizeEnd
     }
   } 
@@ -64,8 +64,53 @@ const sheetjsWebWorker = (xlsxBuffer)=>{
     // };
   })
 }
+import * as Excel from "exceljs";
+// const options = {
+//   // sharedStrings: 'emit',
+//   // hyperlinks: 'emit',
+//   sharedStrings: 'cache',
+//   hyperlinks: 'cache',
+//   worksheets: 'emit',
+//   styles: 'cache',
+// };
+// const handleReadExcel = async(file)=>{
+//   const name = file.name;
+//   const timeStart = Date.now()
+//   const workbookReader = new Excel.stream.xlsx.WorkbookReader('./testXlsx');
+//   const data = [];
+//   for await (const worksheetReader of workbookReader) {
+//       for await (const row of worksheetReader) {
+//         console.log("Raw text:\n" + row.values)
+//         data.push("Raw text:\n" + row.values)
+//       }
+//   }
+//   const timeEnd = Date.now()
+//   console.log(timeEnd - timeStart, 'now')
+//   return data
+// }
+const resolveXlsx = async(file)=>{
+  // const data = await handleReadExcel(file);
+  // console.log(data)
+  // return data;
+  //small file
+  console.log(file)
+  const buf = file.arrayBuffer();
+  const workbook = new Excel.Workbook();
+  await workbook.xlsx.load(buf).then(async()=>{
+    const workSheet = await workbook.getWorksheet(1);
+    await workSheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      console.log(`Row ${rowNumber}: ${row.values}`);
+      const info = `Row ${rowNumber}: ${row.values}`;  
+      return info
+    });
+  })
+}
 const handledXlsxFormat = async(inputFile) => {
-  console.log(inputFile);
+  await resolveXlsx(inputFile)
+  // console.log(inputFile);
+  // const files = await handleBigContentFile(inputFile);
+  // console.log(files,'files')
+  // console.log(files,'files')
   // const startTime = new Date();
   // const xlsx = await workerHandleXlsx(inputFile);
   // console.log(xlsx, 'xlsx');
@@ -87,22 +132,35 @@ const handledXlsxFormat = async(inputFile) => {
   //   xlsxData = xlsxData.concat(sheetjsXlsx);
   // })
   // console.log(xlsxData, 'xlsxData')
+  // const test = inputFile.arrayBuffer();
+  // console.log(test,'test')
+  // axios
+  // axios.post('http://localhost:8081/posts', {
+  //   file:inputFile
+  //   // file:files
+  // },{
+  //   timeout: 500000,
+  //   headers: {
+  //     'Content-Type': 'multipart/form-data'
+  //   }})
+  // .then(function (response) {
+  //   console.log(response);
+  // })
+  // .catch(function (error) {
+  //   console.log(error);
+  // });
+  //read xlsx
+  // const name = inputFile.name;
+  // console.log(name)
+  // const workbook = new Excel.Workbook();
+  // // console.log(workbook)
+  // await workbook.xlsx.readFile(inputFile).then(async()=>{
+  //   const workSheet = await workbook.getWorksheet(1);
+  //   console.log(workSheet)
+  // });
 
-  //axios
-  axios.post('http://localhost:8081/posts', {
-    file:inputFile
-  },{
-    timeout: 100000,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }})
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
-
+  
+  //
   //sheetjswebwork
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
