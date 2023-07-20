@@ -1,33 +1,29 @@
 import { Subject } from "rxjs";
 import { read, utils,writeFileXLSX,/* writeFile */} from 'xlsx';
-import axios from 'axios';
-// import readXlsxFile from 'read-excel-file';
-// import readXlsxFile from 'read-excel-file/web-worker';
+// import axios from 'axios';
 let xlsxData = [];
 let sheetName;
 const _transferTableInfo$ = new Subject([]);
 const _exportFileProgram$ = new Subject({});
-const handleBigContentFile = async(inputFile) =>{
-  const bytePerPiece = 1024 * 1024 * 5;
-  const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
-  let fileSizeIndex = 0;
-  // const fileName = inputFile.name;
-  // let fileIndex = 0;
-  const fileArr = [];
-  if(fileNumber > 0){
-    for (let i = 0 ; fileNumber > i ; i++){
-      let fileSizeEnd = fileSizeIndex + bytePerPiece;
-      if(fileSizeEnd > inputFile.size) fileSizeEnd = inputFile.size;
-      const type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      const chunkFile = inputFile.slice(fileSizeIndex, fileSizeEnd, type);
-      // const promiseBlob = Promise.resolve(chunkFile).then((val)=> val.arrayBuffer());
-      Promise.resolve(chunkFile).then((promiseBlob) => fileArr.push(promiseBlob));
+// const handleBigContentFile = async(inputFile) =>{
+//   const bytePerPiece = 1024 * 1024 * 5;
+//   const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
+//   let fileSizeIndex = 0;
+//   const fileArr = [];
+//   if(fileNumber > 0){
+//     for (let i = 0 ; fileNumber > i ; i++){
+//       let fileSizeEnd = fileSizeIndex + bytePerPiece;
+//       if(fileSizeEnd > inputFile.size) fileSizeEnd = inputFile.size;
+//       const type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+//       const chunkFile = inputFile.slice(fileSizeIndex, fileSizeEnd, type);
+//       // const promiseBlob = Promise.resolve(chunkFile).then((val)=> val.arrayBuffer());
+//       Promise.resolve(chunkFile).then((promiseBlob) => fileArr.push(promiseBlob));
       
-      fileSizeIndex = fileSizeEnd
-    }
-  } 
-  return await fileArr
-}
+//       fileSizeIndex = fileSizeEnd
+//     }
+//   } 
+//   return await fileArr
+// }
 // const workerHandleXlsx = (inputFile)=>{
 //   return new Promise((resolve, reject)=>{
 //     const xlsxWorker = new Worker(new URL('worker.js', import.meta.url),{type:'module'});
@@ -64,56 +60,25 @@ const sheetjsWebWorker = (xlsxBuffer)=>{
     // };
   })
 }
-import * as Excel from "exceljs";
-// const options = {
-//   // sharedStrings: 'emit',
-//   // hyperlinks: 'emit',
-//   sharedStrings: 'cache',
-//   hyperlinks: 'cache',
-//   worksheets: 'emit',
-//   styles: 'cache',
-// };
-// const handleReadExcel = async(file)=>{
-//   const name = file.name;
-//   const timeStart = Date.now()
-//   const workbookReader = new Excel.stream.xlsx.WorkbookReader('./testXlsx');
-//   const data = [];
-//   for await (const worksheetReader of workbookReader) {
-//       for await (const row of worksheetReader) {
-//         console.log("Raw text:\n" + row.values)
-//         data.push("Raw text:\n" + row.values)
-//       }
-//   }
-//   const timeEnd = Date.now()
-//   console.log(timeEnd - timeStart, 'now')
-//   return data
+// import * as Excel from "exceljs";
+// const resolveXlsx = async(file)=>{
+//   //small file
+//   console.log(file)
+//   const buf = file.arrayBuffer();
+//   const workbook = new Excel.Workbook();
+//   await workbook.xlsx.load(buf).then(async()=>{
+//     const workSheet = await workbook.getWorksheet(1);
+//     await workSheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+//       console.log(`Row ${rowNumber}: ${row.values}`);
+//       const info = `Row ${rowNumber}: ${row.values}`;  
+//       return info
+//     });
+//   })
 // }
-const resolveXlsx = async(file)=>{
-  // const data = await handleReadExcel(file);
-  // console.log(data)
-  // return data;
-  //small file
-  console.log(file)
-  const buf = file.arrayBuffer();
-  const workbook = new Excel.Workbook();
-  await workbook.xlsx.load(buf).then(async()=>{
-    const workSheet = await workbook.getWorksheet(1);
-    await workSheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-      console.log(`Row ${rowNumber}: ${row.values}`);
-      const info = `Row ${rowNumber}: ${row.values}`;  
-      return info
-    });
-  })
-}
 const handledXlsxFormat = async(inputFile) => {
-  await resolveXlsx(inputFile)
-  // console.log(inputFile);
+  // await resolveXlsx(inputFile)
   // const files = await handleBigContentFile(inputFile);
-  // console.log(files,'files')
-  // console.log(files,'files')
-  // const startTime = new Date();
   // const xlsx = await workerHandleXlsx(inputFile);
-  // console.log(xlsx, 'xlsx');
   // const endTime = new Date();
   // const runTime = endTime.getTime() - startTime.getTime();
   // console.log(runTime, 'runTime')
@@ -134,7 +99,7 @@ const handledXlsxFormat = async(inputFile) => {
   // console.log(xlsxData, 'xlsxData')
   // const test = inputFile.arrayBuffer();
   // console.log(test,'test')
-  // axios
+  // axios  後端
   // axios.post('http://localhost:8081/posts', {
   //   file:inputFile
   //   // file:files
@@ -162,13 +127,12 @@ const handledXlsxFormat = async(inputFile) => {
   
   //
   //sheetjswebwork
-  // const xlsxBuffer = await inputFile.arrayBuffer();
-  // const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
-  // await _transferTableInfo$.next({ 
-  //   name: sheetjsXlsx.data.sheetName, 
-  //   data: sheetjsXlsx.data.xlsxData 
-  // });
-  // console.log(sheetjsXlsx, 'sheetjsXlsx');
+  const xlsxBuffer = await inputFile.arrayBuffer();
+  const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
+  await _transferTableInfo$.next({ 
+    name: sheetjsXlsx.data.sheetName, 
+    data: sheetjsXlsx.data.xlsxData 
+  });
   //small file
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const workBook = read(xlsxBuffer);
@@ -195,23 +159,21 @@ const handledXlsxFormat = async(inputFile) => {
   // console.log(len,'len')
   
 }
-const readXlsx = async(xlsxBuffer, isTrue) => {
-  const workBook = await read(xlsxBuffer);
-  console.log(workBook)
-    // console.log(workBook,'workBook');
-    if(workBook.SheetNames.length > 1){
-      return
-    }else{
-      sheetName = workBook.SheetNames[0];
-    }
-    // xlsxData = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
-    const data = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
-    xlsxData = xlsxData.concat(data);
-    if(isTrue === true) {
-      await _transferTableInfo$.next({ name:sheetName, data: xlsxData });
-      console.log(xlsxData, 'xlsxData')
-    }
-}
+// const readXlsx = async(xlsxBuffer, isTrue) => {
+//   const workBook = await read(xlsxBuffer);
+//     if(workBook.SheetNames.length > 1){
+//       return
+//     }else{
+//       sheetName = workBook.SheetNames[0];
+//     }
+//     // xlsxData = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
+//     const data = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
+//     xlsxData = xlsxData.concat(data);
+//     if(isTrue === true) {
+//       await _transferTableInfo$.next({ name:sheetName, data: xlsxData });
+//       console.log(xlsxData, 'xlsxData')
+//     }
+// }
 const handleFilterXlsx = ()=> console.log('handleFilterXlsx');
 const exportXlsx = ()=> {
   const wb = utils.book_new();
