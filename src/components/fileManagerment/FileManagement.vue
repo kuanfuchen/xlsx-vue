@@ -1,5 +1,5 @@
 <template>
-  <div style="width:60vw;height:200px">
+  <div style="width:60vw ; height:200px">
     <!-- <v-tabs v-model="fileTabs" bg-color="cyan-lighten-4" color="indigo">
       <v-tab value="uploadFile" class="text-none" @click="fileTabs = 'uploadFile'">Upload File</v-tab>
       <v-tab value="exportFile" class="text-none" @click="fileTabs = 'exportFile'">Export File</v-tab>

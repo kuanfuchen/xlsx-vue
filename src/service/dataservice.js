@@ -1,10 +1,11 @@
 import { Subject } from "rxjs";
-import { read, utils,writeFileXLSX,/* writeFile */} from 'xlsx';
+import { /*read,*/ utils,writeFileXLSX,/* writeFile */} from 'xlsx';
 // import axios from 'axios';
-let xlsxData = [];
+let sheetjsReaderXlsxFile = [];
 let sheetName;
 const _transferTableInfo$ = new Subject([]);
 const _exportFileProgram$ = new Subject({});
+const _lockedInterface$ = new Subject({});
 // const handleBigContentFile = async(inputFile) =>{
 //   const bytePerPiece = 1024 * 1024 * 5;
 //   const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
@@ -39,25 +40,16 @@ const _exportFileProgram$ = new Subject({});
 //   })
 // };
 const sheetjsWebWorker = (xlsxBuffer)=>{
-  return new Promise((res, rej)=>{
-    const xlsxWorker = new Worker(new URL('worker.js', import.meta.url),{type:'module'});
+  return new Promise((resolve, reject)=>{
+    const xlsxWorker = new Worker(new URL('worker.js', import.meta.url),{ type:'module' });
     xlsxWorker.postMessage(xlsxBuffer);
     xlsxWorker.onmessage = (ev)=>{
-      res(ev);
+      resolve(ev);
     };
     xlsxWorker.onerror = (err)=>{
-      rej(err);
+      reject(err);
       console.log(err)
     }
-    // xlsxWorker.postMessage(xlsxBuffer);
-    // xlsxWorker.onmessage  = (ev)=>{
-    //   console.log(ev.data,'data')
-    //   res(ev.data)
-    // };
-    // xlsxWorker.onerror = (err)=>{
-    //   console.log(err)
-    //   rej(err)
-    // };
   })
 }
 // import * as Excel from "exceljs";
@@ -79,26 +71,18 @@ const handledXlsxFormat = async(inputFile) => {
   // await resolveXlsx(inputFile)
   // const files = await handleBigContentFile(inputFile);
   // const xlsx = await workerHandleXlsx(inputFile);
-  // const endTime = new Date();
-  // const runTime = endTime.getTime() - startTime.getTime();
-  // console.log(runTime, 'runTime')
   //
   //big data
   // const handleFile = await handleBigContentFile(inputFile);
   // const xlsxBufferArr = await Promise.all(handleFile).then((values)=> values);
   // console.log(xlsxBufferArr, xlsxBufferArr.length, 'xlsxBufferArr');
   // xlsxBufferArr.forEach(async(chunkXlsx, index) => {
-  //   console.log(chunkXlsx)
   //   let isTrue = false;
   //   if(xlsxBufferArr.length === index + 1) isTrue = true;
   //   const xlsxBuffer = await chunkXlsx.arrayBuffer();
-  //   // await readXlsx(xlsxBuffer, isTrue);
   //   const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
   //   xlsxData = xlsxData.concat(sheetjsXlsx);
   // })
-  // console.log(xlsxData, 'xlsxData')
-  // const test = inputFile.arrayBuffer();
-  // console.log(test,'test')
   // axios  後端
   // axios.post('http://localhost:8081/posts', {
   //   file:inputFile
@@ -116,23 +100,24 @@ const handledXlsxFormat = async(inputFile) => {
   // });
   //read xlsx
   // const name = inputFile.name;
-  // console.log(name)
   // const workbook = new Excel.Workbook();
   // // console.log(workbook)
   // await workbook.xlsx.readFile(inputFile).then(async()=>{
   //   const workSheet = await workbook.getWorksheet(1);
   //   console.log(workSheet)
   // });
-
-  
   //
   //sheetjswebwork
+  await _lockedInterface$.next(true);
   const xlsxBuffer = await inputFile.arrayBuffer();
-  const sheetjsXlsx = await sheetjsWebWorker(xlsxBuffer);
-  await _transferTableInfo$.next({ 
-    name: sheetjsXlsx.data.sheetName, 
-    data: sheetjsXlsx.data.xlsxData 
-  });
+  sheetjsReaderXlsxFile = await sheetjsWebWorker(xlsxBuffer);
+
+  await _transferTableInfo$.next(sheetjsReaderXlsxFile);
+  await _lockedInterface$.next(false);
+  // await _transferTableInfo$.next({ 
+  //   name: sheetjsXlsx.data.sheetName, 
+  //   data: sheetjsXlsx.data.xlsxData 
+  // });
   //small file
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const workBook = read(xlsxBuffer);
@@ -156,34 +141,15 @@ const handledXlsxFormat = async(inputFile) => {
   // if(len < 1024) len += " bytes"; else { len /= 1024;
   //   if(len < 1024) len += " KB"; else { len /= 1024; len += " MB"; }
   // }
-  // console.log(len,'len')
-  
+  // console.log(len,'len') 
 }
-// const readXlsx = async(xlsxBuffer, isTrue) => {
-//   const workBook = await read(xlsxBuffer);
-//     if(workBook.SheetNames.length > 1){
-//       return
-//     }else{
-//       sheetName = workBook.SheetNames[0];
-//     }
-//     // xlsxData = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
-//     const data = await utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]/*,{raw:false, header:1}*/);
-//     xlsxData = xlsxData.concat(data);
-//     if(isTrue === true) {
-//       await _transferTableInfo$.next({ name:sheetName, data: xlsxData });
-//       console.log(xlsxData, 'xlsxData')
-//     }
-// }
 const handleFilterXlsx = ()=> console.log('handleFilterXlsx');
 const exportXlsx = ()=> {
   const wb = utils.book_new();
-  const ws = utils.json_to_sheet(xlsxData);
+  const ws = utils.json_to_sheet(sheetjsReaderXlsxFile);
   utils.book_append_sheet(wb, ws, "Data");
   writeFileXLSX(wb, 'new_' + sheetName);
   _exportFileProgram$.next({ download: true });
-  // const wb = utils.aoa_to_sheet([[]],{cellDates:true});
-  // writeFileXLSX(wb, 'new_xlsx.xlsx')
-  // utils.book_append_sheet(workbook, wb, 'new_xlsx');
 };
 
 export const dataService = {
@@ -192,4 +158,5 @@ export const dataService = {
   handleFilterXlsx,
   transferTableInfo$: _transferTableInfo$.asObservable(),
   exportFileProgram$: _exportFileProgram$.asObservable(),
+  lockedInterface$: _lockedInterface$.asObservable(),
 }
