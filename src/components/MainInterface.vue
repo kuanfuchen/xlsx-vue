@@ -1,15 +1,15 @@
 <template>
   <div>
     <Narbar />
-    <div class="mt-2" v-if="sheetsName.length !==0">
-      <span class="mx-2">Sheet:</span>
-    <span v-for="name in sheetsName" :key="name" @click="selectedSheet(name)">
-        <v-btn variant="outlined" class="text-none ml-2 my-1">
-          {{ name }}
-        </v-btn>
-    </span>
-  </div>
-    <h3 class="my-1 ml-2" v-if="sheetName !== 'null'">{{ sheetName }}</h3>
+    <div class="mt-0" v-if="sheetsName.length !==0">
+      <div class="d-flex mb-1" style="align-items: center;">
+        <h3 class="ml-5" v-if="sheetName !== 'null'">{{ sheetName }}</h3>
+        <span class="ml-auto mr-2" style="font-size: 22px;">Sheet:</span>
+        <SheetList class="mr-1 py-1" :propsItems="sheetsName" @selectItem="selectedSheet"></SheetList>
+        <v-btn class="mr-1" icon="mdi-filter-check-outline" @click="toggledFilterPage = true">
+      </v-btn>
+      </div>
+    </div>
     <div class="mx-2 mt-1" style="overflow-y:hidden">
       <v-data-table 
         v-model:items-per-page="itemsPerPage"
@@ -20,6 +20,15 @@
         height="84vh"
       ></v-data-table>
     </div>
+    <v-dialog v-model="toggledFilterPage" width="auto" persistent>
+      <v-card style="width:80vw">
+        <FilterPage :filterItems="xlsxFileHeader"></FilterPage>
+        <v-card-actions>
+          <v-btn class="text-none ml-auto" color="primary" variant="outlined"
+          @click="toggledFilterPage = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script setup>
@@ -28,6 +37,8 @@
   import { dataService } from '../service/dataservice';
   import { Subject, takeUntil } from 'rxjs';
   import { VDataTable } from 'vuetify/labs/VDataTable';
+  import SheetList from './modules/BtnList.vue';
+  import FilterPage from './modules/FilterData.vue';
   const xlsxFileHeader = ref([]);
   const showXlsxFileTalbe = ref([]);
   const comSubject$ = new Subject();
@@ -35,8 +46,8 @@
   const storagedXlsxFile = [];
   const sheetsName = reactive([]);
   const sheetName = ref('null');
+  const toggledFilterPage = ref(false);
   dataService.transferTableInfo$.pipe(takeUntil(comSubject$)).subscribe(async(readXlsxFile)=>{
-    console.log(readXlsxFile);
     await displayedXlsxTableData(readXlsxFile.data[0]);
     readXlsxFile.data.forEach((sheet) => {
       storagedXlsxFile.push({

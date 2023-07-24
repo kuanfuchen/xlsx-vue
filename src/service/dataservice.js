@@ -19,7 +19,6 @@ const _lockedInterface$ = new Subject({});
 //       const chunkFile = inputFile.slice(fileSizeIndex, fileSizeEnd, type);
 //       // const promiseBlob = Promise.resolve(chunkFile).then((val)=> val.arrayBuffer());
 //       Promise.resolve(chunkFile).then((promiseBlob) => fileArr.push(promiseBlob));
-      
 //       fileSizeIndex = fileSizeEnd
 //     }
 //   } 
