@@ -6,6 +6,7 @@ let sheetName;
 const _transferTableInfo$ = new Subject([]);
 const _exportFileProgram$ = new Subject({});
 const _lockedInterface$ = new Subject({});
+const _transfetSheetsList$ = new Subject([]);
 // const handleBigContentFile = async(inputFile) =>{
 //   const bytePerPiece = 1024 * 1024 * 5;
 //   const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
@@ -110,13 +111,14 @@ const handledXlsxFormat = async(inputFile) => {
   await _lockedInterface$.next(true);
   const xlsxBuffer = await inputFile.arrayBuffer();
   sheetjsReaderXlsxFile = await sheetjsWebWorker(xlsxBuffer);
-
-  await _transferTableInfo$.next(sheetjsReaderXlsxFile);
-  await _lockedInterface$.next(false);
-  // await _transferTableInfo$.next({ 
-  //   name: sheetjsXlsx.data.sheetName, 
-  //   data: sheetjsXlsx.data.xlsxData 
-  // });
+  const transferSheetsList = [];
+  const transferSheetData = sheetjsReaderXlsxFile.data[0];
+  for(let i = 0 ; sheetjsReaderXlsxFile.data.length > i ;i++){
+    transferSheetsList.push(sheetjsReaderXlsxFile.data[i].sheetName)
+  }
+  await _transferTableInfo$.next( transferSheetData );
+  await _transfetSheetsList$.next( transferSheetsList );
+  await _lockedInterface$.next( false );
   //small file
   // const xlsxBuffer = await inputFile.arrayBuffer();
   // const workBook = read(xlsxBuffer);
@@ -142,7 +144,19 @@ const handledXlsxFormat = async(inputFile) => {
   // }
   // console.log(len,'len') 
 }
-const handleFilterXlsx = ()=> console.log('handleFilterXlsx');
+const changedSheetData = (sheetName)=>{
+  console.log(sheetName);
+  const sheetIndex = sheetjsReaderXlsxFile.data.findIndex((sheet)=>sheet.sheetName === sheetName);
+  if(sheetIndex === -1) return;
+  _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
+}
+const handleFilterXlsx = (conditions)=>{
+  console.log(conditions);
+  const test = conditions[0];
+  console.log(sheetjsReaderXlsxFile.data);
+
+  
+}
 const exportXlsx = ()=> {
   const wb = utils.book_new();
   const ws = utils.json_to_sheet(sheetjsReaderXlsxFile);
@@ -150,12 +164,13 @@ const exportXlsx = ()=> {
   writeFileXLSX(wb, 'new_' + sheetName);
   _exportFileProgram$.next({ download: true });
 };
-
 export const dataService = {
   handledXlsxFormat,
   exportXlsx,
   handleFilterXlsx,
+  changedSheetData,
   transferTableInfo$: _transferTableInfo$.asObservable(),
   exportFileProgram$: _exportFileProgram$.asObservable(),
   lockedInterface$: _lockedInterface$.asObservable(),
+  transfetSheetsList$: _transfetSheetsList$.asObservable(),
 }

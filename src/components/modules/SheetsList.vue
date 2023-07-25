@@ -8,13 +8,15 @@
 </template>
 <script setup>
   import {ref, onMounted} from 'vue';
+  import { dataService } from '../../service/dataservice.js';
   const definedProp = defineProps(['propsItems']);
-  const definedEmit  = defineEmits(['selectItem']);
+  // const definedEmit  = defineEmits(['selectItem']);
   const selectedItem = ref('');
-  const clickedItem = (item)=>{
-    console.log(item,'item')
-    selectedItem.value = item;
-    definedEmit('selectItem',item)
+  const clickedItem = (sheetName)=>{
+    console.log(sheetName,'sheetName')
+    selectedItem.value = sheetName;
+    // definedEmit('selectItem',item)
+    dataService.changedSheetData(sheetName)
   }
   onMounted(() => {
     selectedItem.value = definedProp.propsItems[0];

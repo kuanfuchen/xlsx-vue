@@ -9,7 +9,7 @@
   </div>
 </template>
 <script setup>
-  import {ref} from 'vue';
+  import { ref } from 'vue';
   import { dataService } from '../../service/dataservice';
   import { takeUntil } from 'rxjs';
   import {Subject} from 'rxjs';
