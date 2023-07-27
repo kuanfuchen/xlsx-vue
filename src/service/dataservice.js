@@ -2,7 +2,10 @@ import { Subject } from "rxjs";
 import { /*read,*/ utils,writeFileXLSX,/* writeFile */} from 'xlsx';
 // import axios from 'axios';
 let sheetjsReaderXlsxFile = [];
+let filterCondition = [];
+let sheetsList = [];
 let sheetName;
+let sheetIndex = 0;
 const _transferTableInfo$ = new Subject([]);
 const _exportFileProgram$ = new Subject({});
 const _lockedInterface$ = new Subject({});
@@ -111,13 +114,13 @@ const handledXlsxFormat = async(inputFile) => {
   await _lockedInterface$.next(true);
   const xlsxBuffer = await inputFile.arrayBuffer();
   sheetjsReaderXlsxFile = await sheetjsWebWorker(xlsxBuffer);
-  const transferSheetsList = [];
+  // const transferSheetsList = [];
   const transferSheetData = sheetjsReaderXlsxFile.data[0];
   for(let i = 0 ; sheetjsReaderXlsxFile.data.length > i ;i++){
-    transferSheetsList.push(sheetjsReaderXlsxFile.data[i].sheetName)
+    sheetsList.push(sheetjsReaderXlsxFile.data[i].sheetName)
   }
   await _transferTableInfo$.next( transferSheetData );
-  await _transfetSheetsList$.next( transferSheetsList );
+  await _transfetSheetsList$.next( sheetsList );
   await _lockedInterface$.next( false );
   //small file
   // const xlsxBuffer = await inputFile.arrayBuffer();
@@ -143,25 +146,61 @@ const handledXlsxFormat = async(inputFile) => {
   //   if(len < 1024) len += " KB"; else { len /= 1024; len += " MB"; }
   // }
   // console.log(len,'len') 
-}
-const changedSheetData = (sheetName)=>{
-  console.log(sheetName);
-  const sheetIndex = sheetjsReaderXlsxFile.data.findIndex((sheet)=>sheet.sheetName === sheetName);
-  if(sheetIndex === -1) return;
-  _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
+};
+const transferSheetsList = ()=> sheetsList;
+const changedSheetData = async(sheetName)=>{
+  sheetIndex = await sheetjsReaderXlsxFile.data.findIndex((sheet) => sheet.sheetName === sheetName);
+  if(sheetIndex === -1) {
+    sheetIndex = 0;
+    return
+  }
+  handleFilterXlsx(filterCondition);
+  // _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
 }
 const handleFilterXlsx = (conditions)=>{
-  console.log(conditions);
-  const test = conditions[0];
-  console.log(sheetjsReaderXlsxFile.data);
-
-  
+  if(conditions.length === 0){
+    filterCondition = [];
+    _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
+    return
+  }
+  const filterData = [];
+  filterCondition = conditions;
+  if(!sheetjsReaderXlsxFile.data[sheetIndex] || !sheetjsReaderXlsxFile.data[sheetIndex].sheetData) return;
+  sheetName = sheetjsReaderXlsxFile.data[sheetIndex].sheetName;
+  sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row)=>{
+    let changedRowStr = '';
+    let changedConditionLower = '';
+    let equalCondition;
+    for(let i = 0 ; conditions.length > i ; i++){
+      if(!row[conditions[i].selectedItem])continue;
+      changedRowStr = row[conditions[i].selectedItem].toString().toLowerCase();
+      changedConditionLower = conditions[i].textContent.toLowerCase();
+      if(i === 0){
+        equalCondition = changedRowStr === changedConditionLower;
+      }else{
+        if(conditions[i].uesdlinkedMethod === 'and') equalCondition = equalCondition && changedRowStr === changedConditionLower;
+        if(conditions[i].uesdlinkedMethod === 'or') equalCondition = equalCondition || changedRowStr === changedConditionLower;
+      }
+    }
+    if(equalCondition) filterData.push(row);
+  });
+  if(filterData.length === 0){
+    return
+  }
+  _transferTableInfo$.next({sheetName, 'sheetData':filterData});
 }
-const exportXlsx = ()=> {
+const exportXlsx = (sheetList)=> {
+  const list = [];
   const wb = utils.book_new();
-  const ws = utils.json_to_sheet(sheetjsReaderXlsxFile);
-  utils.book_append_sheet(wb, ws, "Data");
-  writeFileXLSX(wb, 'new_' + sheetName);
+  sheetList.forEach((sheet)=> {if(sheet.selected)list.push(sheet.name)});
+  for(let i = 0 ; list.length > i ; i++){
+    const sheetIndex = sheetjsReaderXlsxFile.data.findIndex((data)=>data.sheetName === list[i]);
+    if(sheetIndex !== -1){
+      const ws = utils.json_to_sheet(sheetjsReaderXlsxFile.data[sheetIndex].sheetData);
+      utils.book_append_sheet(wb, ws, sheetjsReaderXlsxFile.data[sheetIndex].sheetName);
+    }
+  }
+  writeFileXLSX(wb, 'new_Excel' + '.xlsx');
   _exportFileProgram$.next({ download: true });
 };
 export const dataService = {
@@ -169,6 +208,7 @@ export const dataService = {
   exportXlsx,
   handleFilterXlsx,
   changedSheetData,
+  transferSheetsList,
   transferTableInfo$: _transferTableInfo$.asObservable(),
   exportFileProgram$: _exportFileProgram$.asObservable(),
   lockedInterface$: _lockedInterface$.asObservable(),

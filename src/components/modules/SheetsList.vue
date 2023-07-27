@@ -7,16 +7,15 @@
     </v-col>
 </template>
 <script setup>
-  import {ref, onMounted} from 'vue';
+  import { ref, onMounted} from 'vue';
   import { dataService } from '../../service/dataservice.js';
   const definedProp = defineProps(['propsItems']);
-  // const definedEmit  = defineEmits(['selectItem']);
+  const definedEmit = defineEmits(['toggledProgress']);
   const selectedItem = ref('');
-  const clickedItem = (sheetName)=>{
-    console.log(sheetName,'sheetName')
+  const clickedItem = async(sheetName)=>{
     selectedItem.value = sheetName;
-    // definedEmit('selectItem',item)
-    dataService.changedSheetData(sheetName)
+    definedEmit('toggledProgress',true);
+    setTimeout(()=> dataService.changedSheetData(sheetName),500);
   }
   onMounted(() => {
     selectedItem.value = definedProp.propsItems[0];

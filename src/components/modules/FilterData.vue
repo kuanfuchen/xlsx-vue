@@ -27,7 +27,12 @@
           </v-btn>
         </div>
       </div>
-    <v-btn variant="outlined" color="primary" class="text-none" @click="filteredConditionTransportDataService()">Enter</v-btn>
+      <div class="d-flex justify-between mb-2">
+        <v-btn variant="outlined" color="primary" class="text-none" @click="filteredConditionTransportDataService()">Enter</v-btn>
+        <v-btn class="text-none ml-auto" color="primary" variant="outlined"
+          @click="toggledFilterPage">Close</v-btn>
+      </div>
+    
   </div>
 </template>
 <script setup>
@@ -36,11 +41,13 @@
   import { dataService } from '../../service/dataservice';
   const linkedMethod = ref(['and', 'or']);
   const definedProps = defineProps(['filterItems']);
+  const definedEmits = defineEmits(['toggledFilterPage']);
   const filteredCondition = ref([{
     uesdlinkedMethod:'and',
     selectedItem:'',
     textContent:''
   }]);
+  const toggledFilterPage = ()=>definedEmits('toggledFilterPage', false);
   const removedFilterCondition = (index) => {
     if(filteredCondition.value.length > 1){
       filteredCondition.value.splice(index, 1)
@@ -59,7 +66,11 @@
   };
   const filteredConditionTransportDataService = () => {
     const conditions = JSON.parse(JSON.stringify(filteredCondition.value));
-    console.log(conditions,'conditions');
+    for(let i = conditions.length - 1; i > 0 ; i--){
+      if(conditions[i].selectedItem === '' || conditions[i].textContent === ''){
+        conditions.splice(i, 1);
+      }
+    }
     dataService.handleFilterXlsx(conditions);
   }
 </script>

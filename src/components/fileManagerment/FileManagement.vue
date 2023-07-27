@@ -15,12 +15,13 @@
       </v-window>
       
     </v-card-text> -->
-    <ImportData />
-    
+    <ImportData @toggledImportPage="toggledFileManagementPage" />
   </div>
 </template>
 <script setup>
   import ImportData from './ImportData.vue';
+  const definedEmit = defineEmits(['toggledFileManagementPage']);
+  const toggledFileManagementPage = (isToggled) => definedEmit('toggledFileManagementPage',isToggled)
   // import ExportData from './ExportData.vue';
   // import { ref } from 'vue';
   // const fileTabs = ref('uploadFile');

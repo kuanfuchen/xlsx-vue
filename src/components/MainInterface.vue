@@ -5,8 +5,7 @@
       <div class="d-flex mb-1" style="align-items: center;">
         <h3 class="ml-5" v-if="sheetName !== 'null'">{{ sheetName }}</h3>
         <span class="ml-auto mr-2" style="font-size: 22px;">Sheet:</span>
-        <SheetList class="mr-1 py-1" :propsItems="sheetsName" ></SheetList>
-        <!-- @selectItem="selectedSheet" -->
+        <SheetList class="mr-1 py-1" :propsItems="sheetsName" @toggledProgress="(ev) => toggleProgress = ev"></SheetList>
         <v-btn class="mr-1" icon="mdi-filter-check-outline" @click="toggledFilterPage = true">
       </v-btn>
       </div>
@@ -19,13 +18,21 @@
     </div>
     <v-dialog v-model="toggledFilterPage" width="auto" persistent>
       <v-card style="width:80vw">
-        <FilterPage :filterItems="xlsxFileHeader"></FilterPage>
-        <v-card-actions>
-          <v-btn class="text-none ml-auto" color="primary" variant="outlined"
-          @click="toggledFilterPage = false">Close</v-btn>
-        </v-card-actions>
+        <FilterPage :filterItems="xlsxFileHeader" @toggledFilterPage="(ev)=>toggledFilterPage=ev"></FilterPage>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="toggleProgress" width="auto" persistent>
+      <v-card style="width: 30vw; height: 20vh;" class="justify-center align-center">
+        <h1 class="mb-4">Waiting</h1>
+        <v-progress-circular
+          :size="100"
+          :width="12"
+          color="primary"
+          indeterminate
+        ></v-progress-circular>
+      </v-card>
+    </v-dialog>
+    
   </div>
 </template>
 <script setup>
@@ -40,38 +47,21 @@
   const showXlsxFileTalbe = ref([]);
   const comSubject$ = new Subject();
   const itemsPerPage = ref(100);
-  // const storagedXlsxFile = [];
-  // const storageSheetsName = [];
+  const toggleProgress = ref(false);
   const sheetsName = reactive([]);
   const sheetName = ref('null');
   const toggledFilterPage = ref(false);
   dataService.transferTableInfo$.pipe(takeUntil(comSubject$)).subscribe(async(readXlsxFile)=>{
     await displayedXlsxTableData(readXlsxFile.sheetData);
     sheetName.value = readXlsxFile.sheetName;
-    // readXlsxFile.data.forEach((sheet) => {
-    //   storagedXlsxFile.push({
-    //     sheetName:sheet.sheetName,
-    //     sheetData:sheet.sheetData
-    //   });
-    //   sheetsName.push(sheet.sheetName);
-    // });
   });
   dataService.transfetSheetsList$.pipe(takeUntil(comSubject$)).subscribe((sheetsList)=>{
+    console.log(sheetsList,'sheetsList')
     if(sheetsName.length > 0) sheetsName.length = 0;
     for(let i = 0 ; sheetsList.length > i ; i++){
       sheetsName.push(sheetsList[i]);
     }
-  })
-  // const selectedSheet = (sheetname)=>{
-    // if(storagedXlsxFile.length === 0) return;
-    // if(sheetsName.value === sheetname) return;
-    // storagedXlsxFile.forEach((sheet)=>{
-    //   if(sheet.sheetName === sheetname){
-    //     displayedXlsxTableData(sheet);
-    //     return
-    //   }
-    // })
-  // }
+  });
   const displayedXlsxTableData = (readXlsxData) => {
     if(showXlsxFileTalbe.value.length !== 0) showXlsxFileTalbe.value.length = 0;
     const headerKeys = Object.keys(readXlsxData[0]);
@@ -86,5 +76,6 @@
       showXlsxFileTalbe.value.push(readXlsxData[i]);
       if(i % 1000 === 0)console.log(i);
     }
+    toggleProgress.value = false;
   }
 </script>
