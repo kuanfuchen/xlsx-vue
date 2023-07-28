@@ -10,6 +10,7 @@ const _transferTableInfo$ = new Subject([]);
 const _exportFileProgram$ = new Subject({});
 const _lockedInterface$ = new Subject({});
 const _transfetSheetsList$ = new Subject([]);
+const _handleXlsxMessage$ = new Subject([]);
 // const handleBigContentFile = async(inputFile) =>{
 //   const bytePerPiece = 1024 * 1024 * 5;
 //   const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
@@ -148,60 +149,124 @@ const handledXlsxFormat = async(inputFile) => {
   // console.log(len,'len') 
 };
 const transferSheetsList = ()=> sheetsList;
-const changedSheetData = async(sheetName)=>{
+const changedSheetData = async(sheetName, exportFile = false)=>{
   sheetIndex = await sheetjsReaderXlsxFile.data.findIndex((sheet) => sheet.sheetName === sheetName);
   if(sheetIndex === -1) {
     sheetIndex = 0;
     return
   }
-  handleFilterXlsx(filterCondition);
+  handleFilterXlsx(filterCondition, exportFile);
   // _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
 }
-const handleFilterXlsx = (conditions)=>{
+const readXlsxContent = (conditions) => {
+  return new Promise((resolve, reject)=>{
+    try{
+      const filterData = [];
+      filterCondition = conditions;
+      if(!sheetjsReaderXlsxFile.data[sheetIndex] || !sheetjsReaderXlsxFile.data[sheetIndex].sheetData) return;
+      sheetName = sheetjsReaderXlsxFile.data[sheetIndex].sheetName;
+      sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row)=>{
+        let changedRowStr = '';
+        let changedConditionLower = '';
+        let equalCondition;
+        for(let i = 0 ; conditions.length > i ; i++){
+          if(!row[conditions[i].selectedItem])continue;
+          changedRowStr = row[conditions[i].selectedItem].toString().toLowerCase();
+          changedConditionLower = conditions[i].textContent.toLowerCase();
+          if(i === 0){
+            equalCondition = changedRowStr === changedConditionLower;
+          }else{
+            if(conditions[i].uesdlinkedMethod === 'and') equalCondition = equalCondition && changedRowStr === changedConditionLower;
+            if(conditions[i].uesdlinkedMethod === 'or') equalCondition = equalCondition || changedRowStr === changedConditionLower;
+          }
+        }
+        if(equalCondition) filterData.push(row);
+        resolve(filterData)
+      });
+    }catch(err){
+      console.log(err)
+      reject(err)
+    }
+    
+  })
+}
+const handleFilterXlsx = (conditions, exportFile = false) => {
   if(conditions.length === 0){
     filterCondition = [];
     _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
     return
   }
-  const filterData = [];
-  filterCondition = conditions;
-  if(!sheetjsReaderXlsxFile.data[sheetIndex] || !sheetjsReaderXlsxFile.data[sheetIndex].sheetData) return;
-  sheetName = sheetjsReaderXlsxFile.data[sheetIndex].sheetName;
-  sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row)=>{
-    let changedRowStr = '';
-    let changedConditionLower = '';
-    let equalCondition;
-    for(let i = 0 ; conditions.length > i ; i++){
-      if(!row[conditions[i].selectedItem])continue;
-      changedRowStr = row[conditions[i].selectedItem].toString().toLowerCase();
-      changedConditionLower = conditions[i].textContent.toLowerCase();
-      if(i === 0){
-        equalCondition = changedRowStr === changedConditionLower;
-      }else{
-        if(conditions[i].uesdlinkedMethod === 'and') equalCondition = equalCondition && changedRowStr === changedConditionLower;
-        if(conditions[i].uesdlinkedMethod === 'or') equalCondition = equalCondition || changedRowStr === changedConditionLower;
-      }
+  const timeStart = Date.now();
+  readXlsxContent(conditions).then((filterData)=>{
+    console.log(filterData, 'filterData');
+    if(filterData.length === 0){
+    _handleXlsxMessage$.next({'message': "No information, change your search information", displayedIcon: false })
+      return
     }
-    if(equalCondition) filterData.push(row);
-  });
-  if(filterData.length === 0){
-    return
-  }
-  _transferTableInfo$.next({sheetName, 'sheetData':filterData});
+    if(exportFile){
+      return filterData;
+    }
+    _transferTableInfo$.next({sheetName, 'sheetData':filterData});
+    _handleXlsxMessage$.next({'message':"Search finish", displayedIcon: false })
+    const timeEnd = Date.now();
+    console.log(timeEnd - timeStart, 'time')
+  })
+  // const filterData = [];
+  // filterCondition = conditions;
+  // if(!sheetjsReaderXlsxFile.data[sheetIndex] || !sheetjsReaderXlsxFile.data[sheetIndex].sheetData) return;
+  // sheetName = sheetjsReaderXlsxFile.data[sheetIndex].sheetName;
+  // sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row)=>{
+  //   let changedRowStr = '';
+  //   let changedConditionLower = '';
+  //   let equalCondition;
+  //   for(let i = 0 ; conditions.length > i ; i++){
+  //     if(!row[conditions[i].selectedItem])continue;
+  //     changedRowStr = row[conditions[i].selectedItem].toString().toLowerCase();
+  //     changedConditionLower = conditions[i].textContent.toLowerCase();
+  //     if(i === 0){
+  //       equalCondition = changedRowStr === changedConditionLower;
+  //     }else{
+  //       if(conditions[i].uesdlinkedMethod === 'and') equalCondition = equalCondition && changedRowStr === changedConditionLower;
+  //       if(conditions[i].uesdlinkedMethod === 'or') equalCondition = equalCondition || changedRowStr === changedConditionLower;
+  //     }
+  //   }
+  //   if(equalCondition) filterData.push(row);
+  // });
+  // console.log(filterData)
+  // if(filterData.length === 0){
+  //   _handleXlsxMessage$.next({'message': "No information, change your search information", displayedIcon: false })
+  //   return
+  // }
+  // if(exportFile){
+  //   return filterData;
+  // } 
+
+  // _transferTableInfo$.next({sheetName, 'sheetData':filterData});
+  // _handleXlsxMessage$.next({'message':"Search finish", displayedIcon: false })
 }
-const exportXlsx = (sheetList)=> {
-  const list = [];
+const exportXlsx = async(sheetList)=> {
+  const selectedSheetsName = [];
   const wb = utils.book_new();
-  sheetList.forEach((sheet)=> {if(sheet.selected)list.push(sheet.name)});
-  for(let i = 0 ; list.length > i ; i++){
-    const sheetIndex = sheetjsReaderXlsxFile.data.findIndex((data)=>data.sheetName === list[i]);
-    if(sheetIndex !== -1){
+  sheetList.forEach((sheet)=> {if(sheet.selected)selectedSheetsName.push(sheet.name)});
+  for(let i = 0 ; selectedSheetsName.length > i ; i++){
+    const sheetData = await changedSheetData(selectedSheetsName[i], true);
+    if(sheetData.length > 0){
       const ws = utils.json_to_sheet(sheetjsReaderXlsxFile.data[sheetIndex].sheetData);
       utils.book_append_sheet(wb, ws, sheetjsReaderXlsxFile.data[sheetIndex].sheetName);
     }
   }
   writeFileXLSX(wb, 'new_Excel' + '.xlsx');
+  _handleXlsxMessage$.next({'message': "Export files finish", displayedIcon: false })
   _exportFileProgram$.next({ download: true });
+  // for(let i = 0 ; selectedSheetsName.length > i ; i++){
+  //   const sheetIndex = sheetjsReaderXlsxFile.data.findIndex((data)=>data.sheetName === selectedSheetsName[i]);
+  //   if(sheetIndex !== -1){
+  //     const ws = utils.json_to_sheet(sheetjsReaderXlsxFile.data[sheetIndex].sheetData);
+  //     utils.book_append_sheet(wb, ws, sheetjsReaderXlsxFile.data[sheetIndex].sheetName);
+  //   }
+  // }
+  // writeFileXLSX(wb, 'new_Excel' + '.xlsx');
+  // _exportFileProgram$.next({ download: true });
 };
 export const dataService = {
   handledXlsxFormat,
@@ -213,4 +278,5 @@ export const dataService = {
   exportFileProgram$: _exportFileProgram$.asObservable(),
   lockedInterface$: _lockedInterface$.asObservable(),
   transfetSheetsList$: _transfetSheetsList$.asObservable(),
+  handleXlsxMessage$:_handleXlsxMessage$.asObservable()
 }

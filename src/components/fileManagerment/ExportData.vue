@@ -12,11 +12,14 @@
         </li>
       </ul>
     </div>
-    <div class="mt-2 d-flex mb-2">
-      <div class="mx-auto">
-        <v-btn variant="outlined" class="mr-2 text-none" @click="exportXlsx">Download</v-btn>
-        <v-btn variant="outlined" class="text-none" @click="closedExportPage">Cancel</v-btn>
+    <div class="my-2 d-flex">
+      <div class="d-flex mx-2 ">
+        <v-btn variant="outlined" class="text-none" color="primary" @click="exportXlsx" :disabled="exportXlsxLocked">Download</v-btn>
+        <v-progress-circular indeterminate color="green" v-if="exportXlsxLocked"></v-progress-circular>
       </div>
+        <div class="ml-auto mr-2">
+          <v-btn variant="outlined" color="" class="text-none" :disabled="exportXlsxLocked" @click="closedExportPage">Cancel</v-btn>
+        </div>
     </div>
   </div>
 </template>
@@ -26,15 +29,17 @@ import { ref, reactive, onMounted } from 'vue';
 import { dataService } from '../../service/dataservice';
 const comSubject$ = new Subject();
 const definedEmit = defineEmits(['toggledExportPage']);
-const downloadFileDialog = ref(false);
 const sheetsList = reactive([]);
+const exportXlsxLocked = ref(false);
 dataService.exportFileProgram$.pipe(takeUntil(comSubject$)).subscribe((program)=>{
-  downloadFileDialog.value = program.download;
+  console.log(program.download, 'program.download')
 });
 const closedExportPage = ()=> definedEmit('toggledExportPage', false);
-const exportXlsx = ()=> {
+const exportXlsx = async()=> {
+  exportXlsxLocked.value = true;
   const exportSheetsList = JSON.parse(JSON.stringify(sheetsList));
-  dataService.exportXlsx(exportSheetsList);
+  await dataService.exportXlsx(exportSheetsList);
+  setTimeout(()=>{exportXlsxLocked.value = false},500)
 };
 onMounted(async() => {
   const dataSheetsList = await dataService.transferSheetsList();
@@ -45,9 +50,4 @@ onMounted(async() => {
     })
   }
 })
-// dataService.transfetSheetsList$.pipe(takeUntil(comSubject$)).subscribe((sheetsNameList)=>{
-//   console.log(sheetsNameList,'sheetsNameList')
-//   if(sheetsList.value.length > 0) sheetsList.value.length = 0;
-//   sheetsList.value = sheetsNameList;
-// });
 </script>

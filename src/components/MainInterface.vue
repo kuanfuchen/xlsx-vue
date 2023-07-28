@@ -10,11 +10,24 @@
       </v-btn>
       </div>
     </div>
-    <div class="mx-2 mt-1" style="overflow-y:hidden">
-      <v-data-table item-value="Chr" class="elevation-1"
+    <div class="mx-2 mt-1" >
+      <!-- style="height: 84vh;" -->
+      <!-- <v-data-table item-value="Chr" class="elevation-1"
         v-model:items-per-page="itemsPerPage" height="84vh"
         :headers="xlsxFileHeader" :items="showXlsxFileTalbe">
-      </v-data-table>
+      </v-data-table> -->
+      <table style="overflow-y:scroll;" >
+        <tr >
+          <th v-for="header in xlsxFileHeader" :key="header" style="border-bottom:1px solid black">
+            {{ header.key }}
+          </th>
+        </tr>
+        <tr v-for="value in showXlsxFileTalbe" :key="value">
+          <td v-for="val in value" :key="val" style="border-bottom:1px solid rgba(128, 128, 128, 0.5)" class="py-1">
+          {{ val }}
+          </td>
+        </tr>
+      </table>
     </div>
     <v-dialog v-model="toggledFilterPage" width="auto" persistent>
       <v-card style="width:80vw">
@@ -56,7 +69,6 @@
     sheetName.value = readXlsxFile.sheetName;
   });
   dataService.transfetSheetsList$.pipe(takeUntil(comSubject$)).subscribe((sheetsList)=>{
-    console.log(sheetsList,'sheetsList')
     if(sheetsName.length > 0) sheetsName.length = 0;
     for(let i = 0 ; sheetsList.length > i ; i++){
       sheetsName.push(sheetsList[i]);
@@ -65,17 +77,24 @@
   const displayedXlsxTableData = (readXlsxData) => {
     if(showXlsxFileTalbe.value.length !== 0) showXlsxFileTalbe.value.length = 0;
     const headerKeys = Object.keys(readXlsxData[0]);
+    const fileHeader = [];
+    const fileTableContent = [];
     for(let i = 0 ; headerKeys.length > i ; i++){
-      xlsxFileHeader.value.push({
+      fileHeader.push({
         title: headerKeys[i],
         key: headerKeys[i],
         align: 'start',
       })
     }
     for(let i = 0 ; readXlsxData.length > i ; i++){
-      showXlsxFileTalbe.value.push(readXlsxData[i]);
+      fileTableContent.push(readXlsxData[i]);
       if(i % 1000 === 0)console.log(i);
     }
+    xlsxFileHeader.value = fileHeader;
+    showXlsxFileTalbe.value = fileTableContent;
+    console.log(fileTableContent, 'fileTableContent')
     toggleProgress.value = false;
+    console.log(fileHeader, 'fileHeader')
+    console.log(fileTableContent, 'fileTableContent')
   }
 </script>
