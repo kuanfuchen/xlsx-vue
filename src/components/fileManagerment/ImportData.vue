@@ -16,6 +16,7 @@
         Close
       </v-btn>
     </div>
+
   </div>
 </template>
 <script setup>
@@ -35,6 +36,7 @@
   };
   const importedXlsxData = async() => {
     const xlsxFileValue = xlsxFile.value;
+    
     // importXLSXlocked.value = false;
     // xlsxInterfaceLock.value = true;
     await dataService.handledXlsxFormat(xlsxFileValue);
