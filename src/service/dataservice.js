@@ -157,6 +157,13 @@ const changedSheetData = async(sheetName, exportFile = false)=>{
   }
   handleFilterXlsx(filterCondition, exportFile);
   // _transferTableInfo$.next( sheetjsReaderXlsxFile.data[sheetIndex] );
+};
+const searchAllXlsxData = (searchText)=>{
+  if(!sheetjsReaderXlsxFile.data[sheetIndex] || !sheetjsReaderXlsxFile.data[sheetIndex].sheetData) return;
+  sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row)=>{
+    const rowVal = Object.values(row);
+    // const index  = rowVal.filter((item) => item.indexOf())
+  })
 }
 const readXlsxContent = (conditions) => {
   return new Promise((resolve, reject)=>{
@@ -170,14 +177,17 @@ const readXlsxContent = (conditions) => {
         let changedConditionLower = '';
         let equalCondition;
         for(let i = 0 ; conditions.length > i ; i++){
-          if(!row[conditions[i].selectedItem])continue;
+          if(!row[conditions[i].selectedItem]) continue;
           changedRowStr = row[conditions[i].selectedItem].toString().toLowerCase();
           changedConditionLower = conditions[i].textContent.toLowerCase();
+          console.log(changedConditionLower, changedRowStr);
+          const test = changedRowStr.indexOf(changedConditionLower);
+          console.log(test,'test')
           if(i === 0){
-            equalCondition = changedRowStr === changedConditionLower;
+            equalCondition = changedRowStr.indexOf(changedConditionLower) > -1? true : false;
           }else{
-            if(conditions[i].uesdlinkedMethod === 'and') equalCondition = equalCondition && changedRowStr === changedConditionLower;
-            if(conditions[i].uesdlinkedMethod === 'or') equalCondition = equalCondition || changedRowStr === changedConditionLower;
+            if(conditions[i].uesdlinkedMethod === 'and') equalCondition = equalCondition && changedRowStr.indexOf(changedConditionLower) > -1?true : false;
+            if(conditions[i].uesdlinkedMethod === 'or') equalCondition = equalCondition || changedRowStr.indexOf(changedConditionLower) > -1?true : false;
           }
         }
         if(equalCondition) filterData.push(row);

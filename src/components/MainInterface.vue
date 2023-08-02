@@ -3,33 +3,30 @@
     <Narbar />
     <div class="mt-0" v-if="sheetsName.length !==0">
       <div class="d-flex mb-1" style="align-items: center;">
-        <h3 class="ml-5" v-if="sheetName !== 'null'">{{ sheetName }}</h3>
-        <span class="ml-auto mr-2" style="font-size: 22px;">Sheet:</span>
+        <!-- <h3 class="ml-5" v-if="sheetName !== 'null'">{{ sheetName }}</h3> -->
+        <!-- <span class="ml-auto mr-2" style="font-size: 22px;">Sheet:</span> -->
         <SheetList class="mr-1 py-1" :propsItems="sheetsName" @toggledProgress="(ev) => toggleProgress = ev"></SheetList>
-        <v-btn class="mr-1" icon="mdi-filter-check-outline" @click="toggledFilterPage = true">
-      </v-btn>
+        <div class="ml-auto mr-5">
+          <input type="text" v-model="searchText" class="px-1 py-1" style="border: 1px solid black;border-radius:3px 0 0 3px;" placeholder="search">
+          <button style="border: 1px solid black;" class="px-2 py-1" @click="searchFun">
+            <span class="mdi mdi-magnify"></span>
+          </button>
+            
+        </div>
+        <v-btn class="mr-1" icon="mdi-filter-check-outline" @click="toggledFilterPage = true"></v-btn>
+        <!-- <div class="mr-5 d-flex " style="align-items: center;justify-content: space-between;">
+          
+        </div> -->
       </div>
     </div>
-    <div class="mx-2 mt-1" >
+    <div class="mx-2 mt-1">
       <!-- style="height: 84vh;" -->
-      <!-- <v-data-table item-value="Chr" class="elevation-1"
+      <v-data-table item-value="Chr" class="elevation-1"
         v-model:items-per-page="itemsPerPage" height="84vh"
         :headers="xlsxFileHeader" :items="showXlsxFileTalbe">
-      </v-data-table> -->
-      <table style="overflow-y:scroll;" >
-        <tr >
-          <th v-for="header in xlsxFileHeader" :key="header" style="border-bottom:1px solid black">
-            {{ header.key }}
-          </th>
-        </tr>
-        <tr v-for="value in showXlsxFileTalbe" :key="value">
-          <td v-for="val in value" :key="val" style="border-bottom:1px solid rgba(128, 128, 128, 0.5)" class="py-1">
-          {{ val }}
-          </td>
-        </tr>
-      </table>
+      </v-data-table>
     </div>
-    <v-dialog v-model="toggledFilterPage" width="auto" persistent>
+    <v-dialog v-model="toggledFilterPage" width="auto">
       <v-card style="width:80vw">
         <FilterPage :filterItems="xlsxFileHeader" @toggledFilterPage="(ev)=>toggledFilterPage=ev"></FilterPage>
       </v-card>
@@ -37,15 +34,9 @@
     <v-dialog v-model="toggleProgress" width="auto" persistent>
       <v-card style="width: 30vw; height: 20vh;" class="justify-center align-center">
         <h1 class="mb-4">Waiting</h1>
-        <v-progress-circular
-          :size="100"
-          :width="12"
-          color="primary"
-          indeterminate
-        ></v-progress-circular>
+        <v-progress-circular color="primary" indeterminate :size="100" :width="12"></v-progress-circular>
       </v-card>
     </v-dialog>
-    
   </div>
 </template>
 <script setup>
@@ -53,17 +44,22 @@
   import Narbar from './NavBar.vue';
   import { dataService } from '../service/dataservice';
   import { Subject, takeUntil } from 'rxjs';
+  // import DataTable from 'datatables.net-vue3';
+  // import DataTablesCore from 'datatables.net';
+  // DataTable.use(DataTablesCore);
   import { VDataTable } from 'vuetify/labs/VDataTable';
   import SheetList from './modules/SheetsList.vue';
   import FilterPage from './modules/FilterData.vue';
   const xlsxFileHeader = ref([]);
   const showXlsxFileTalbe = ref([]);
   const comSubject$ = new Subject();
-  const itemsPerPage = ref(100);
+  const itemsPerPage = ref(50);
   const toggleProgress = ref(false);
   const sheetsName = reactive([]);
   const sheetName = ref('null');
   const toggledFilterPage = ref(false);
+  const searchText = ref('');
+  // import SvgIcon from '@jamescoyle/vue-icon';
   dataService.transferTableInfo$.pipe(takeUntil(comSubject$)).subscribe(async(readXlsxFile)=>{
     await displayedXlsxTableData(readXlsxFile.sheetData);
     sheetName.value = readXlsxFile.sheetName;
@@ -92,9 +88,12 @@
     }
     xlsxFileHeader.value = fileHeader;
     showXlsxFileTalbe.value = fileTableContent;
-    console.log(fileTableContent, 'fileTableContent')
     toggleProgress.value = false;
-    console.log(fileHeader, 'fileHeader')
-    console.log(fileTableContent, 'fileTableContent')
+    // console.log(fileTableContent, 'fileTableContent');
+    // console.log(fileHeader, 'fileHeader')
+    // console.log(fileTableContent, 'fileTableContent')
+  }
+  const searchFun = ()=>{
+    console.log(searchText.value)
   }
 </script>
