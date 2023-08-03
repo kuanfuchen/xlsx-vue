@@ -24,6 +24,7 @@
   import { dataService } from '../../service/dataservice';
   import { takeUntil } from 'rxjs';
   import {Subject} from 'rxjs';
+  const definedProps = defineProps(['existXlsx']);
   const comSubject$ = new Subject([]);
   const xlsxFile = ref(null);
   const importXLSXlocked = ref(false);
@@ -43,10 +44,10 @@
     // xlsxInterfaceLock.value=false;
   };
   dataService.lockedInterface$.pipe(takeUntil(comSubject$)).subscribe((interfaceLocked)=>{
-    console.log(interfaceLocked)
     importXLSXlocked.value = interfaceLocked;
-    xlsxInterfaceLock.value = interfaceLocked;
+    // xlsxInterfaceLock.value = interfaceLocked;
   });
   onMounted(() => {
+    xlsxInterfaceLock.value = definedProps.existXlsx === true ? false : true;
   })
 </script>

@@ -3,20 +3,14 @@
     <Narbar />
     <div class="mt-0" v-if="sheetsName.length !==0">
       <div class="d-flex mb-1" style="align-items: center;">
-        <!-- <h3 class="ml-5" v-if="sheetName !== 'null'">{{ sheetName }}</h3> -->
-        <!-- <span class="ml-auto mr-2" style="font-size: 22px;">Sheet:</span> -->
         <SheetList class="mr-1 py-1" :propsItems="sheetsName" @toggledProgress="(ev) => toggleProgress = ev"></SheetList>
         <div class="ml-auto mr-5">
           <input type="text" v-model="searchText" class="px-1 py-1" style="border: 1px solid black;border-radius:3px 0 0 3px;" placeholder="search">
           <button style="border: 1px solid black;" class="px-2 py-1" @click="searchFun">
             <span class="mdi mdi-magnify"></span>
           </button>
-            
         </div>
         <v-btn class="mr-1" icon="mdi-filter-check-outline" @click="toggledFilterPage = true"></v-btn>
-        <!-- <div class="mr-5 d-flex " style="align-items: center;justify-content: space-between;">
-          
-        </div> -->
       </div>
     </div>
     <div class="mx-2 mt-1">
