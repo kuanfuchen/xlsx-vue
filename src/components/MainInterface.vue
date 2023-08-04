@@ -18,6 +18,31 @@
       <v-data-table item-value="Chr" class="elevation-1"
         v-model:items-per-page="itemsPerPage" height="84vh"
         :headers="xlsxFileHeader" :items="showXlsxFileTalbe">
+        <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort}">
+          <tr>
+            <template v-for="column in columns" :key="column">
+              <td >
+                <!-- <span>{{ col.key }}</span> -->
+                <span class="mr-2 cursor-pointer" @click="() => toggleSort(column)">{{ column.title }}</span>
+                <template v-if="isSorted(column)">
+                  <v-icon :icon="getSortIcon(column)"></v-icon>
+                </template>
+                <!-- <v-icon icon="$close" @click="removeColumn(column.key)"></v-icon> -->
+              </td>
+            </template>
+            
+          </tr>
+        </template>
+        <template v-slot:item="{item}">
+          <tr>
+            <td v-for="(value, key, index) in item.columns" :key="key">
+              <span>
+                {{ value }}
+              </span>
+              
+            </td>
+          </tr>
+        </template>
       </v-data-table>
     </div>
     <v-dialog v-model="toggledFilterPage" width="auto">
@@ -89,5 +114,13 @@
   }
   const searchFun = ()=>{
     console.log(searchText.value)
+  };
+  dataService.toggleHeaderSetting$.pipe(takeUntil(comSubject$)).subscribe((header)=>{
+    removeColumn(header)
+  });
+  const removeColumn = (key) => {
+    
+    const removeIndex = xlsxFileHeader.value.findIndex((header)=>header.key === key);
+    if(removeIndex > -1) xlsxFileHeader.value.splice(removeIndex , 1);
   }
 </script>
