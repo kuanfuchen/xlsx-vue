@@ -11,6 +11,7 @@ Vue.js
 Sheet.js
 Vuetify
 rxjs
+vite
 
 npm install
 
