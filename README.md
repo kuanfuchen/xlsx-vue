@@ -1,9 +1,4 @@
 # default
-
-Vue.js
-Sheet.js
-Vuetify
-
 ## Project setup
 
 ```
@@ -11,12 +6,17 @@ Vuetify
 yarn
 
 # npm
+
+Vue.js
+Sheet.js
+Vuetify
+rxjs
+
 npm install
 
 # pnpm
 pnpm install
 ```
-
 ### Compiles and hot-reloads for development
 
 ```
