@@ -1,5 +1,9 @@
 # default
 
+Vue.js
+Sheet.js
+Vuetify
+
 ## Project setup
 
 ```
