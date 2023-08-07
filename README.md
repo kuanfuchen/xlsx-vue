@@ -1,5 +1,4 @@
 # default
-
 ## Project setup
 
 ```
@@ -7,12 +6,18 @@
 yarn
 
 # npm
-npm install
 
+Vue.js
+Sheet.js
+Vuetify
+rxjs
+vite
+
+npm install
+vue-webWork
 # pnpm
 pnpm install
 ```
-
 ### Compiles and hot-reloads for development
 
 ```
