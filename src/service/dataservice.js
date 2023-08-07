@@ -13,6 +13,7 @@ const _lockedInterface$ = new Subject({});
 const _transfetSheetsList$ = new Subject([]);
 const _handleXlsxMessage$ = new Subject([]);
 const _transferHeaderInfo$ = new Subject([]);
+const _toggleHeaderSetting$ = new Subject({});
 // const handleBigContentFile = async(inputFile) =>{
 //   const bytePerPiece = 1024 * 1024 * 5;
 //   const fileNumber = Math.ceil(inputFile.size / bytePerPiece);
@@ -169,8 +170,7 @@ const readXlsxContent = (conditions) => {
       filterCondition = conditions;
       if(!sheetjsReaderXlsxFile.data[sheetIndex] || !sheetjsReaderXlsxFile.data[sheetIndex].sheetData) return;
       sheetName = sheetjsReaderXlsxFile.data[sheetIndex].sheetName;
-      sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row, index) => {
-        console.log(row, 'index')
+      sheetjsReaderXlsxFile.data[sheetIndex].sheetData.forEach((row) => {
         let changedRowStr = '';
         let changedConditionLower = '';
         let equalCondition;
@@ -210,7 +210,7 @@ const handleFilterXlsx = (conditions, exportFile = false) => {
       return filterData;
     }
     _transferTableInfo$.next({sheetName, 'sheetData':filterData});
-    _handleXlsxMessage$.next({'message':"Search finish", displayedIcon: false })
+    _handleXlsxMessage$.next({'message': "Search finish", displayedIcon: false })
   })
   // const filterData = [];
   // filterCondition = conditions;
@@ -268,12 +268,15 @@ const exportXlsx = async(sheetList)=> {
   // writeFileXLSX(wb, 'new_Excel' + '.xlsx');
   // _exportFileProgram$.next({ download: true });
 };
+const toggleHeaderSetting = (header) => _toggleHeaderSetting$.next(header);
 export const dataService = {
   handledXlsxFormat,
   exportXlsx,
   handleFilterXlsx,
   changedSheetData,
   transferSheetsList,
+  toggleHeaderSetting,
+  toggleHeaderSetting$:_toggleHeaderSetting$.asObservable(),
   transferHeaderInfo$: _transferHeaderInfo$.asObservable(),
   transferTableInfo$: _transferTableInfo$.asObservable(),
   exportFileProgram$: _exportFileProgram$.asObservable(),

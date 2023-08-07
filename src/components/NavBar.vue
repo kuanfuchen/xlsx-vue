@@ -11,7 +11,7 @@
         @click="toogledImportFile = !toogledImportFile">
       </v-btn>
       <!-- <v-btn variant="text" icon="mdi-cog-box"></v-btn> -->
-      <Setting></Setting>
+      <Setting ></Setting>
       <!-- <v-app-bar-nav-icon icon="mdi-cog-box" variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon> -->
     </v-app-bar>
     <!-- <v-navigation-drawer v-model="drawer" location="bottom" temporary>
