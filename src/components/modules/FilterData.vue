@@ -32,10 +32,14 @@
           <v-btn variant="outlined" color="primary" class="text-none mr-2" @click="filteredConditionTransportDataService()">
           Search
           </v-btn>
+          <v-btn class="text-none mx-2" color="green" variant="outlined" @click="clearedSearch()">
+            <v-icon>mdi-autorenew</v-icon>
+          </v-btn>
           <p>
             <span v-if="displayMeg.message !== ''" class="mr-2">{{ displayMeg.message }}</span>
             <v-progress-circular indeterminate color="primary" v-if="displayMeg.toogleIcon"></v-progress-circular>
           </p>
+
         </div>
         
         <v-btn class="text-none ml-auto" color="primary" variant="outlined"
@@ -45,19 +49,15 @@
   </div>
 </template>
 <script setup>
-  import {ref,/* reactive */} from 'vue';
+  import {onMounted, ref,/* reactive */} from 'vue';
   import { Subject, takeUntil, debounceTime} from 'rxjs';
   // import { timestamp } from 'rxjs/operators';
-  const conSubject$ = new Subject();
+  const comSubject$ = new Subject();
   import { dataService } from '../../service/dataservice';
   const linkedMethod = ref(['and', 'or']);
   const definedProps = defineProps(['filterItems']);
   const definedEmits = defineEmits(['toggledFilterPage']);
-  const filteredCondition = ref([{
-    uesdlinkedMethod:'and',
-    selectedItem:'',
-    textContent:''
-  }]);
+  const filteredCondition = ref([]);
   const displayMeg = ref({
     toogleIcon:false,
     message:''
@@ -83,17 +83,40 @@
     const conditions = JSON.parse(JSON.stringify(filteredCondition.value));
     displayMeg.value.message = 'data programing';
     displayMeg.value.toogleIcon = true;
-    for(let i = conditions.length - 1; i > 0 ; i--){
+    if(conditions.length > 0){
+      for(let i = conditions.length - 1; i > 0 ; i--){
       if(conditions[i].selectedItem === '' || conditions[i].textContent === ''){
-        conditions.splice(i, 1);
+          conditions.splice(i, 1);
+        }
       }
     }
-    dataService.handleFilterXlsx(conditions)
-    // setTimeout(()=> dataService.handleFilterXlsx(conditions),100);
     
+    dataService.handleFilterXlsx(conditions);
   }
-  dataService.handleXlsxMessage$.pipe(takeUntil(conSubject$), debounceTime(1000)).subscribe((meg) => {
+  const clearedSearch = () =>{
+    filteredCondition.value = [{
+      uesdlinkedMethod:'and',
+      selectedItem:'',
+      textContent:''
+    }];
+    filteredConditionTransportDataService()
+  }
+  dataService.handleXlsxMessage$.pipe(takeUntil(comSubject$), debounceTime(1000)).subscribe((meg) => {
     displayMeg.value.message = meg.message;
     displayMeg.value.toogleIcon = meg.displayedIcon;
   });
+  dataService.transferFilterCondition$.pipe(takeUntil(comSubject$)).subscribe((savedCondition)=>{
+    if(savedCondition.length === 0){
+      filteredCondition.value.push({
+        uesdlinkedMethod:'and',
+        selectedItem:'',
+        textContent:''
+      })
+    }else{
+      filteredCondition.value = savedCondition;
+    }
+  })
+  onMounted(()=>{
+    dataService.transferFilterCondition();
+  })
 </script>

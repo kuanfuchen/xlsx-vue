@@ -10,7 +10,7 @@
         <v-row class="row">
           <v-col :cols="4"  v-for="(header, index) in displayRows" :key="index">
             <v-checkbox density="compact" hide-details="true" :label="header.title" v-model="header.select" class="py-0 my-0"
-            @change="toggleHeader(header)"></v-checkbox>
+            @change="toggleHeaderItems(header)"></v-checkbox>
           </v-col>
         </v-row>
       </v-card>
@@ -34,7 +34,7 @@
       })
     }
   };
-  const toggleHeader = (header) => dataService.toggleHeaderSetting(header);
+  const toggleHeaderItems = (header) => dataService.toggleHeaderSetting(header);
   dataService.transferHeaderInfo$.pipe(takeUntil(comSubject$)).subscribe((headers)=>{
     handleHeadersSelected(headers)
   });

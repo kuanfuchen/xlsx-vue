@@ -1,16 +1,16 @@
 <template>
   <div class="mt-3 mx-2">
     <v-file-input label="Excel input" variant="outlined"
-      accept=".xlsx, .xls" @change="inputXlsxFile($event)"
-    ></v-file-input>
+      accept=".xlsx, .xls" @change="inputXlsxFile($event)">
+    </v-file-input>
     <div class="d-flex justify-between mb-3">
       <div class="">
         <v-btn variant="outlined" class="text-none mr-2" @click="importedXlsxData" :disabled="importXLSXlocked">
         Import
         </v-btn>
-        <v-progress-circular indeterminate color="green" v-if="importXLSXlocked"></v-progress-circular>
-      </div>
-      
+        <v-progress-circular indeterminate color="primary" v-if="importXLSXlocked"></v-progress-circular>
+        <span class="ml-2" v-if="importXLSXlocked">Loading Xlsx</span>
+      </div>  
       <v-btn class="text-none ml-auto" color="primary" variant="outlined"
         @click="toggledImportPage" :disabled="xlsxInterfaceLock">
         Close
@@ -36,15 +36,10 @@
   };
   const importedXlsxData = async() => {
     const xlsxFileValue = xlsxFile.value;
-    
-    // importXLSXlocked.value = false;
-    // xlsxInterfaceLock.value = true;
     await dataService.handledXlsxFormat(xlsxFileValue);
-    // xlsxInterfaceLock.value=false;
   };
   dataService.lockedInterface$.pipe(takeUntil(comSubject$)).subscribe((interfaceLocked)=>{
     importXLSXlocked.value = interfaceLocked;
-    // xlsxInterfaceLock.value = interfaceLocked;
   });
   onMounted(() => {
     xlsxInterfaceLock.value = definedProps.existXlsx === true ? false : true;
