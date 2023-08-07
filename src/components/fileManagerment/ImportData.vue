@@ -16,7 +16,6 @@
         Close
       </v-btn>
     </div>
-
   </div>
 </template>
 <script setup>
