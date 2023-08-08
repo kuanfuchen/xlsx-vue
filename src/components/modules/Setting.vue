@@ -1,16 +1,17 @@
 <template>
-  <div class="text-center" style="overflow-x: hidden;">
+  <div class="text-center ">
     <v-menu v-model="setting" :close-on-content-click="false" location="end">
       <template v-slot:activator="{ props }">
         <!-- <v-btn color="indigo" v-bind="props">Menu as Popover
         </v-btn> -->
         <v-btn variant="text" icon="mdi-cog-box" v-bind="props"></v-btn>
       </template>
-      <v-card max-width="600">
-        <v-row class="row">
+      <v-card  max-width="600" style="overflow-x: hidden;" class="bg-blue-grey-lighten-5">
+        <v-row class="row" >
           <v-col :cols="4"  v-for="(header, index) in displayRows" :key="index">
             <v-checkbox density="compact" hide-details="true" :label="header.title" v-model="header.select" class="py-0 my-0"
-            @change="toggleHeaderItems(header)"></v-checkbox>
+            @change="toggleHeaderItems(header)">
+          </v-checkbox>
           </v-col>
         </v-row>
       </v-card>
@@ -39,3 +40,8 @@
     handleHeadersSelected(headers)
   });
 </script>
+<style>
+  ol, ul {
+    list-style: none;
+  }
+</style>

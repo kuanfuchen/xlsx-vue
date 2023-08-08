@@ -1,6 +1,6 @@
 <template>
-  <div class="mx-2">
-    <h3 class="my-2">Filter: </h3>
+  <div class="mx-5">
+    <h3 class="mt-3 mb-5">Advanced Search: Output based on search results from all pages</h3>
       <div class="d-flex " v-for="( filterItem, index ) in filteredCondition" :key="index">
         <div class=" mx-2" style="width: 100px;">
           <v-select :items="linkedMethod" v-model="filterItem.uesdlinkedMethod" v-if="index > 0">

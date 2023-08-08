@@ -1,24 +1,23 @@
 <template>
   <div>
     <h4 class="ml-5">SheetName</h4>
-    <div class="">
-      <ul class="">
+    <!-- <div class="ml-5"> -->
+      <ul class="ml-5">
         <li v-for="sheet in sheetsList" :key="sheet">
           <div >
-            <v-checkbox v-model="sheet.selected" :label="sheet.name" :dense="true" :hide-details="true"></v-checkbox>
-            <!-- <span>{{ sheet.name }}</span>
-            <span></span> -->
+            <v-checkbox v-model="sheet.selected" :label="sheet.name"  :dense="true" density="compact" :hide-details="true">
+              </v-checkbox>
           </div>
         </li>
       </ul>
-    </div>
+    <!-- </div> -->
     <div class="my-2 d-flex">
-      <div class="d-flex mx-2 ">
+      <div class="d-flex mx-2">
         <v-btn variant="outlined" class="text-none" color="primary" @click="exportXlsx" :disabled="exportXlsxLocked">Download</v-btn>
         <v-progress-circular indeterminate color="green" v-if="exportXlsxLocked"></v-progress-circular>
       </div>
         <div class="ml-auto mr-2">
-          <v-btn variant="outlined" color="" class="text-none" :disabled="exportXlsxLocked" @click="closedExportPage">Cancel</v-btn>
+          <v-btn variant="outlined" class="text-none" :disabled="exportXlsxLocked" @click="closedExportPage">Cancel</v-btn>
         </div>
     </div>
   </div>
@@ -39,7 +38,7 @@ const exportXlsx = async()=> {
   exportXlsxLocked.value = true;
   const exportSheetsList = JSON.parse(JSON.stringify(sheetsList));
   await dataService.exportXlsx(exportSheetsList);
-  setTimeout(()=>{exportXlsxLocked.value = false},500)
+  setTimeout(()=>{exportXlsxLocked.value = false}, 500)
 };
 onMounted(async() => {
   const dataSheetsList = await dataService.transferSheetsList();

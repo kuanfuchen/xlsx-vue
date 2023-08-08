@@ -17,7 +17,7 @@
     <div class="mx-2 mt-1">
       <!-- style="height: 84vh;" -->
       <v-data-table item-value="Chr" class="elevation-1"
-        v-model:items-per-page="itemsPerPage" height="84vh"
+        v-model:items-per-page="itemsPerPage" height="86vh"
         :headers="xlsxFileHeader" :items="showXlsxFileTalbe">
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort}">
           <tr>
